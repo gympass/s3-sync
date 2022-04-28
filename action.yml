@@ -1,0 +1,46 @@
+name: 'S3 sync'
+description: 'Syncs a directory with S3'
+branding:
+  icon: 'cloud'
+  color: 'gray-dark'
+inputs:
+  name:
+    description: 'Application/Repository name'
+    required: false
+  account:
+    description: 'AWS Account to deploy to'
+    required: true
+  bucket-name:
+    description: 'Bucket to sync to'
+    required: true
+  path:
+    description: 'Path to sync to'
+    required: false
+  local-path:
+    description: 'Path to sync from'
+    required: false
+  delete:
+    description: 'Whether to delete files present in destination but not in source'
+    required: false
+  include-git:
+    description: 'Whether to include .git directory when syncing'
+    required: false
+runs:
+  using: "composite"
+  steps:
+    - name: "Run s3-sync"
+      shell: bash
+      run: |
+        set -eux
+        entrypoint='/gympass/s3-sync'
+        if [ -n '${{ inputs.entrypoint }}' ]; then entrypoint="${{ inputs.entrypoint }}"; fi
+        cmd=("$entrypoint")
+        if [ -n '${{ inputs.name }}' ]; then cmd+=(--name ${{ inputs.name }}); fi
+        if [ -n '${{ inputs.account }}' ]; then cmd+=(--account ${{ inputs.account }}); fi
+        if [ -n '${{ inputs.bucket-name }}' ]; then cmd+=(--bucket-name ${{ inputs.bucket-name }}); fi
+        if [ -n '${{ inputs.path }}' ]; then cmd+=(--path ${{ inputs.path }}); fi
+        if [ -n '${{ inputs.local-path }}' ]; then cmd+=(--local-path ${{ inputs.local-path }}); fi
+        if [ -n '${{ inputs.delete }}' ]; then cmd+=(--delete); fi
+        if [ -n '${{ inputs.include-git }}' ]; then cmd+=(--include-git); fi
+
+        "${cmd[@]}"
